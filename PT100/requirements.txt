@@ -1,18 +1,18 @@
+# Core dependencies
 numpy==1.26.4
 opencv-python-headless==4.9.0.80
-psutil==5.9.8
-gpiozero==1.6.2
+gpiozero==2.0.1
 picamera2==0.3.25
 simplejpeg==1.6.6
-scipy==1.12.0
-transforms3d==0.4.1
-pyserial==3.5
-python-dotenv==1.0.1
+psutil==5.9.8
+
+# Web interface
 flask==3.0.2
 flask-socketio==5.3.6
 eventlet==0.35.2
-pillow==10.2.0
-requests==2.31.0
-# Hailo 4.20.0 requirements
-hailo-platform==4.20.0
-hailo-model-zoo==4.20.0 
+
+# Hailo dependencies (install from provided SDK)
+--find-links /opt/hailo/hailo_sw_suite/python/
+hailo-platform==5.0.0
+hailo-model-zoo==5.0.0
+hailo-tappas==5.0.0 

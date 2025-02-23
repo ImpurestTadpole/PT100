@@ -1,3 +1,31 @@
+from gpiozero import AngularServo
+from picamera2 import Picamera2
+
+class SafeServo(AngularServo):
+    def __init__(self, pin):
+        super().__init__(
+            pin,
+            min_angle=-90,
+            max_angle=90,
+            min_pulse_width=0.5/1000,
+            max_pulse_width=2.5/1000
+        )
+
+class Camera:
+    def __init__(self):
+        self.cam = Picamera2()
+        self._configure()
+        
+    def _configure(self):
+        config = self.cam.create_video_configuration()
+        self.cam.configure(config)
+        
+    def start(self):
+        self.cam.start()
+        
+    def get_frame(self):
+        return self.cam.capture_array()
+
 class EnhancedServo(AngularServo):
     def __init__(self, pin, **kwargs):
         # Allow full 360 rotation for pan servo
