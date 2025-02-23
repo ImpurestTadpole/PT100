@@ -1,8 +1,8 @@
 version: 1.0
 deployment:
-  target: raspberry-pi5
+  target: raspberry-pi5-hailo8
   requirements:
-    min_memory: 4GB
+    min_memory: 8GB
     min_storage: 16GB
     interfaces:
       - camera

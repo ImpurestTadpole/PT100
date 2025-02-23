@@ -13,4 +13,6 @@ flask-socketio==5.3.6
 eventlet==0.35.2
 pillow==10.2.0
 requests==2.31.0
-# Hailo dependencies handled by system installation 
+# Hailo 4.20.0 requirements
+hailo-platform==4.20.0
+hailo-model-zoo==4.20.0 

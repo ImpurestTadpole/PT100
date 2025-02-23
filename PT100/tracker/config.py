@@ -13,6 +13,6 @@ class DeploymentConfig:
     def hailo_params(cls):
         return {
             'device_count': 1,
-            'scheduling_algorithm': 'HIGH_THROUGHPUT' if PRODUCTION else 'LATENCY',
-            'batch_size': 8 if PRODUCTION else 1
+            'scheduling_algorithm': 'NATIVE',
+            'batch_size': 4  # Compatible with 4.20.0 SDK
         } 
