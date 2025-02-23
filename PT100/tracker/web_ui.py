@@ -3,7 +3,6 @@ from flask_socketio import SocketIO
 import threading
 import json
 import time
-from three import Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh
 import psutil
 from config import DeploymentConfig
 
@@ -49,21 +48,12 @@ class WebInterface:
             time.sleep(0.1)
 
     def create_3d_visualization(self):
-        self.scene = Scene()
-        self.camera = PerspectiveCamera(75, 1, 0.1, 1000)
-        self.renderer = WebGLRenderer()
-        self.cube = Mesh(
-            BoxGeometry(1, 1, 1),
-            MeshBasicMaterial({ 'color': 0x00ff00, 'wireframe': True })
-        )
-        self.scene.add(self.cube)
-        self.camera.position.z = 2
+        # Remove Three.js server-side rendering (handle in client-side JavaScript)
+        pass
 
     def update_3d_visualization(self, orientation):
-        self.cube.rotation.x = orientation[0]
-        self.cube.rotation.y = orientation[1]
-        self.cube.rotation.z = orientation[2]
-        self.renderer.render(self.scene, self.camera)
+        # Remove Three.js server-side rendering (handle in client-side JavaScript)
+        pass
 
     def get_system_stats(self):
         return {

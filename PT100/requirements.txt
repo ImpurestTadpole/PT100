@@ -1,0 +1,16 @@
+numpy==1.26.4
+opencv-python-headless==4.9.0.80
+psutil==5.9.8
+gpiozero==1.6.2
+picamera2==0.3.25
+simplejpeg==1.6.6
+scipy==1.12.0
+transforms3d==0.4.1
+pyserial==3.5
+python-dotenv==1.0.1
+flask==3.0.2
+flask-socketio==5.3.6
+eventlet==0.35.2
+pillow==10.2.0
+requests==2.31.0
+git+https://github.com/pimoroni/icm20948-python.git 
