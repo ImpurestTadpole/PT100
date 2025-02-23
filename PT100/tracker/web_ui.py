@@ -5,6 +5,7 @@ import json
 import time
 from three import Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh
 import psutil
+from config import DeploymentConfig
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode='threading')
@@ -21,7 +22,20 @@ class WebInterface:
         self.thread.start()
 
     def _run_server(self):
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+        if DeploymentConfig.PRODUCTION:
+            from gevent import monkey
+            monkey.patch_all()
+            socketio.run(app, 
+                        host=DeploymentConfig.WEB_HOST,
+                        port=DeploymentConfig.WEB_PORT,
+                        log_output=DeploymentConfig.PRODUCTION,
+                        use_reloader=False,
+                        debug=False)
+        else:
+            socketio.run(app, 
+                        host=DeploymentConfig.WEB_HOST,
+                        port=DeploymentConfig.WEB_PORT,
+                        debug=True)
 
     def send_sensor_data(self):
         while self.running:

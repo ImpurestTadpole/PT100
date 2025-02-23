@@ -1,0 +1,27 @@
+version: 1.0
+deployment:
+  target: raspberry-pi5
+  requirements:
+    min_memory: 4GB
+    min_storage: 16GB
+    interfaces:
+      - camera
+      - i2c
+      - pwm
+services:
+  - name: pan-tilt-tracker
+    type: systemd
+    config:
+      depends_on:
+        - hailo-service
+        - camera-service
+    healthcheck:
+      test: "curl -f http://localhost:5000/api/health || exit 1"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+logging:
+  driver: journald
+  options:
+    max-size: "100m"
+    max-file: "3" 

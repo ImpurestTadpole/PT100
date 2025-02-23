@@ -123,3 +123,41 @@ MIT License - See [LICENSE](LICENSE) for details
 - Hailo AI for Pi 5 optimized models
 - Raspberry Pi Ltd for RP1 documentation
 - Picamera2 maintainers for Pi 5 support
+
+## One-Click Deployment
+
+```bash
+# Automated setup (run as root)
+curl -sSL https://raw.githubusercontent.com/yourrepo/deploy.sh | bash
+
+# Production deployment
+sudo DEPLOY_ENV=production \
+     CAMERA_RES=1920x1080 \
+     systemctl start pan-tilt.service
+
+# Verify deployment
+sudo hailotop  # Monitor Hailo accelerator
+journalctl -u pan-tilt -f  # View logs
+```
+
+## Cloud Deployment Options
+
+```bash
+# AWS IoT Greengrass
+./setup.sh --platform=aws-iot
+
+# Azure IoT Edge
+./setup.sh --platform=azure-iot
+
+# Kubernetes (k3s)
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik" sh -
+kubectl apply -f deploy/k8s/
+```
+
+## Update Strategy
+
+```bash
+# Over-the-air updates
+sudo apt install -y pan-tilt-updater
+sudo pt-update --channel=stable
+```
