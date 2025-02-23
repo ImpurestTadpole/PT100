@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pan-Tilt Tracking System</title>
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --accent: #2d4263;
+            --text-primary: #e0e0e0;
+            --border: #3a3a3a;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital@1&display=swap');
+
+        .container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            height: 100vh;
+        }
+
+        .video-panel {
+            background: #000;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            min-height: 400px;
+        }
+
+        .video-panel::before {
+            content: "COMPUTER VISION VIEW";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff20;
+            font-size: 1.5em;
+            font-style: italic;
+        }
+
+        .sensor-panel {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #sensorVisual {
+            width: 300px;
+            height: 300px;
+            background: #000;
+            border-radius: 8px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #666;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .control-panel {
+            background: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        select, button {
+            background: #333;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier Prime', monospace;
+            font-style: italic;
+            margin: 5px 0;
+        }
+
+        button:hover {
+            background: var(--accent);
+            cursor: pointer;
+        }
+
+        .sensor-card {
+            background: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .euler-angles div {
+            margin: 5px 0;
+            color: #8a8a8a;
+            font-style: italic;
+        }
+
+        .servo-control {
+            display: grid;
+            gap: 15px;
+        }
+
+        .servo-slider {
+            display: grid;
+            grid-template-columns: 1fr 3fr 80px;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .servo-slider input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .servo-slider input[type="number"] {
+            width: 70px;
+            padding: 5px;
+            background: #333;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="video-container">
+            <div class="video-panel">
+                <h4>Raw Camera Feed</h4>
+                <img id="rawFeed" src="{{ url_for('raw_video_feed') }}">
+            </div>
+            <div class="video-panel">
+                <h4>AI Detection View</h4>
+                <img id="processedFeed" src="{{ url_for('processed_video_feed') }}">
+            </div>
+        </div>
+        
+        <div class="sensor-panel">
+            <h3>Environmental Sensors</h3>
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <h4>Distance</h4>
+                    <div class="gauge" id="distanceGauge"></div>
+                    <div class="value" id="distanceValue">0 cm</div>
+                </div>
+                <div class="sensor-card">
+                    <h4>Orientation</h4>
+                    <div id="orientationVisual"></div>
+                    <div class="euler-angles">
+                        <div>Roll: <span id="rollValue">0°</span></div>
+                        <div>Pitch: <span id="pitchValue">0°</span></div>
+                        <div>Yaw: <span id="yawValue">0°</span></div>
+                    </div>
+                </div>
+                <div class="sensor-card">
+                    <h4>Motion Sensors</h4>
+                    <div class="sensor-metrics">
+                        <div>Acceleration X: <span id="accelX">0</span></div>
+                        <div>Acceleration Y: <span id="accelY">0</span></div>
+                        <div>Acceleration Z: <span id="accelZ">0</span></div>
+                        <div>Gyro X: <span id="gyroX">0</span></div>
+                        <div>Gyro Y: <span id="gyroY">0</span></div>
+                        <div>Gyro Z: <span id="gyroZ">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h3>Target Selection</h3>
+            <select id="targetSelector" onchange="selectTarget(this)">
+                <option value="person">Person</option>
+                <option value="bicycle">Bicycle</option>
+                <option value="car">Car</option>
+                <option value="motorcycle">Motorcycle</option>
+                <option value="airplane">Airplane</option>
+                <option value="bus">Bus</option>
+                <option value="train">Train</option>
+                <option value="truck">Truck</option>
+                <option value="boat">Boat</option>
+                <option value="traffic light">Traffic Light</option>
+                <option value="fire hydrant">Fire Hydrant</option>
+                <option value="stop sign">Stop Sign</option>
+                <option value="parking meter">Parking Meter</option>
+                <option value="bench">Bench</option>
+                <option value="bird">Bird</option>
+                <option value="cat">Cat</option>
+                <option value="dog">Dog</option>
+                <option value="horse">Horse</option>
+                <option value="sheep">Sheep</option>
+                <option value="cow">Cow</option>
+                <!-- Add remaining COCO classes -->
+            </select>
+            <button onclick="centerCamera()">Center Camera</button>
+        </div>
+
+        <div class="control-panel">
+            <h3>Model Controls</h3>
+            <select id="modelSelector" onchange="selectModel(this)">
+                <option value="yolov5s">Object Detection (YOLOv5s)</option>
+                <option value="pose_resnet">Pose Estimation</option>
+                <option value="efficientdet">EfficientDet</option>
+                <option value="nanodet">NanoDet</option>
+            </select>
+            
+            <div class="toggle-switch">
+                <label>Tracking Active:</label>
+                <label class="switch">
+                    <input type="checkbox" id="trackingToggle" onchange="toggleTracking(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h3>Manual Servo Control</h3>
+            <div class="servo-control">
+                <div class="servo-slider">
+                    <label>Pan (0°-360°):</label>
+                    <input type="range" min="0" max="360" value="180" class="slider" id="panSlider">
+                    <input type="number" id="panInput" min="0" max="360" value="180" step="1">
+                </div>
+                <div class="servo-slider">
+                    <label>Tilt (0°-180°):</label>
+                    <input type="range" min="0" max="180" value="90" class="slider" id="tiltSlider">
+                    <input type="number" id="tiltInput" min="0" max="180" value="90" step="1">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let scene, camera, renderer, cube;
+
+        // Initialize 3D visualization
+        function init3D() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(300, 300);
+            document.getElementById('sensorVisual').appendChild(renderer.domElement);
+
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+            camera.position.z = 2;
+        }
+
+        // Update sensor displays
+        socket.on('sensor_update', (data) => {
+            const sensors = JSON.parse(data);
+            document.getElementById('sensorValues').innerHTML = `
+                <p>Pan: ${sensors.pan_angle.toFixed(1)}°</p>
+                <p>Tilt: ${sensors.tilt_angle.toFixed(1)}°</p>
+                <p>Distance: ${sensors.distance.toFixed(1)}cm</p>
+            `;
+            
+            // Update 3D cube rotation
+            cube.rotation.x = sensors.orientation[3];
+            cube.rotation.y = sensors.orientation[4];
+            cube.rotation.z = sensors.orientation[5];
+            renderer.render(scene, camera);
+        });
+
+        // Video stream handling
+        const videoImg = document.getElementById('videoFeed');
+        socket.on('video_frame', (data) => {
+            videoImg.src = 'data:image/jpeg;base64,' + data;
+        });
+
+        function selectTarget(select) {
+            socket.emit('select_target', {class: select.value});
+        }
+        
+        function centerCamera() {
+            socket.emit('center_camera');
+        }
+
+        function selectModel(select) {
+            socket.emit('select_model', {model: select.value});
+        }
+        
+        function toggleTracking(checkbox) {
+            socket.emit('toggle_tracking', {state: checkbox.checked});
+        }
+
+        socket.on('model_classes', data => {
+            const targetSelector = document.getElementById('targetSelector');
+            targetSelector.innerHTML = data.classes
+                .map(cls => `<option value="${cls}">${cls}</option>`)
+                .join('');
+        });
+
+        const panSlider = document.getElementById('panSlider');
+        const panInput = document.getElementById('panInput');
+        const tiltSlider = document.getElementById('tiltSlider');
+        const tiltInput = document.getElementById('tiltInput');
+
+        panSlider.addEventListener('input', (e) => {
+            panInput.value = e.target.value;
+            socket.emit('set_servo', {type: 'pan', angle: parseFloat(e.target.value)});
+        });
+
+        panInput.addEventListener('change', (e) => {
+            panSlider.value = e.target.value;
+            socket.emit('set_servo', {type: 'pan', angle: parseFloat(e.target.value)});
+        });
+
+        tiltSlider.addEventListener('input', (e) => {
+            tiltInput.value = e.target.value;
+            socket.emit('set_servo', {type: 'tilt', angle: parseFloat(e.target.value)});
+        });
+
+        tiltInput.addEventListener('change', (e) => {
+            tiltSlider.value = e.target.value;
+            socket.emit('set_servo', {type: 'tilt', angle: parseFloat(e.target.value)});
+        });
+
+        init3D();
+    </script>
+</body>
+</html> 
