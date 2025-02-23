@@ -1,0 +1,41 @@
+requirements/
+├── base.txt
+# Core dependencies
+numpy==1.26.4
+opencv-python-headless==4.9.0.80
+psutil==5.9.8
+gpiozero==1.6.2
+picamera2==0.3.13
+git+https://github.com/pimoroni/icm20948-python.git
+simplejpeg==1.6.6
+scipy==1.12.0
+transforms3d==0.4.1
+pyserial==3.5
+python-dotenv==1.0.1
+
+├── hailo.txt
+# Hailo AI accelerator dependencies
+hailo-platform==4.15.0
+hailo-sdk-client==4.15.0
+hailo-model-zoo==4.15.0
+hailo-examples==4.15.0
+hailo-tappas==4.15.0
+
+├── web.txt
+# Web interface dependencies
+flask==3.0.2
+flask-socketio==5.3.6
+eventlet==0.35.2
+pillow==10.2.0
+requests==2.31.0
+
+└── dev.txt 
+# Development tools
+pytest==8.0.2
+coverage==7.4.1
+flake8==6.1.0
+black==23.12.1
+jupyterlab==4.0.11
+ipython==8.20.0
+pytest-cov==4.1.0
+mypy==1.8.0

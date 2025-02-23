@@ -21,19 +21,15 @@ sudo raspi-config nonint do_memory_split 256
 
 # Install Python dependencies
 pip3 install --upgrade pip
-pip3 install \
-    gpiozero \
-    icm20948-python \
-    numpy \
-    picamera2 \
-    smbus2 \
-    pyyaml \
-    adafruit-circuitpython-servokit \
-    flask \
-    flask-socketio \
-    eventlet \
-    psutil \
-    matplotlib
+
+# Install base requirements
+pip3 install -r requirements/base.txt
+
+# Install Hailo dependencies
+pip3 install -r requirements/hailo.txt
+
+# Install web interface dependencies
+pip3 install -r requirements/web.txt
 
 # Hailo AI setup
 wget https://hailo.ai/developers/rpi/rpi5/hailort_5.0.0_arm64.deb  # Check latest URL
@@ -57,6 +53,10 @@ mkdir -p ~/pan_tilt_tracker/{models,configs,logs}
 # Set up environment variables
 echo "export PYTHONPATH=\$PYTHONPATH:~/projects/hailo_model_zoo" >> ~/.bashrc
 echo "export HAILO_MODEL_ZOO=~/projects/hailo_model_zoo" >> ~/.bashrc
+
+# Configure HAT power
+echo "dtoverlay=gpio-poweroff,gpiopin=4,active_low=1" | sudo tee -a /boot/firmware/config.txt
+sudo apt install -y hailo-hat-powerctl
 
 # Reboot to apply changes
 echo "Setup complete. Rebooting in 10 seconds..."

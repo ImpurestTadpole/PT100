@@ -11,3 +11,9 @@ class ContinuousPan:
             self._current_position += step_size * self.gear_ratio
             self.servo.angle = (self._current_position % 360) / 180 - 1
             time.sleep(0.01) 
+
+class HailoHATInterface:
+    def __init__(self):
+        from hailo_platform import PcieDevice
+        self.device = PcieDevice.scan_devices()[0]
+        self.device.set_as_hat()  # Enable HAT-specific optimizations 
