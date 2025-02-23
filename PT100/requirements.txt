@@ -13,4 +13,4 @@ flask-socketio==5.3.6
 eventlet==0.35.2
 pillow==10.2.0
 requests==2.31.0
-git+https://github.com/pimoroni/icm20948-python.git 
+# Hailo dependencies handled by system installation 
